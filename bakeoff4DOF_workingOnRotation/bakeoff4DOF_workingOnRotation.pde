@@ -5,6 +5,7 @@ import java.awt.AWTException;
 import java.awt.PointerInfo;
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.lang.Math;
 
 //these are variables you should probably leave alone
 int index = 0; //starts at zero-ith trial
@@ -16,6 +17,8 @@ float errorPenalty = 0.5f; //for every error, add this value to mean time
 int startTime = 0; // time starts when the first click is captured
 int finishTime = 0; //records the time of the final click
 boolean userDone = false; //is the user done
+
+//drag and drop variables
 boolean draggingSquare = false;
 Robot robby;
 
@@ -28,7 +31,8 @@ float screenTransY = 0;
 float screenRotation = 0;
 float screenZ = 50f;
 
-int lenRotateControlHandle = 70;
+//rotate resize variables
+int lenRotateControlHandle = 50;
 boolean rotateResizeSelected = false;
 float prevPosX, prevPosY;
 int widthOfRotateControlCircle = 30;
@@ -124,60 +128,19 @@ void draw() {
   strokeWeight(3f);
   stroke(160);
   rect(0, 0, screenZ, screenZ);
-  line(0, -screenZ/2, 0, -lenRotateControlHandle);
+  line(0, -screenZ/2, 0, -lenRotateControlHandle - (screenZ/2));
   strokeWeight(0f);
   fill(0, 225, 0);
-  ellipse(rotateCircleXpos, rotateCircleYpos, widthOfRotateControlCircle, widthOfRotateControlCircle);
+  rotateCircleXpos = (int)screenTransX; 
+  ellipse(0, -lenRotateControlHandle - (screenZ/2), widthOfRotateControlCircle, widthOfRotateControlCircle);
   popMatrix();
 
   //===========DRAW EXAMPLE CONTROLS=================
   fill(255);
-  scaffoldControlLogic(); //you are going to want to replace this!
   text("Trial " + (trialIndex+1) + " of " +trialCount, width/2, inchToPix(.8f));
 }
 
-//my example design for control, which is terrible
-void scaffoldControlLogic()
-{
-  
-  // ---------------- OLD CODE ------------------
-  //upper left corner, rotate counterclockwise
-  text("CCW", inchToPix(.4f), inchToPix(.4f));
-  if (mousePressed && dist(0, 0, mouseX, mouseY)<inchToPix(.8f))
-    screenRotation--;
 
-  //upper right corner, rotate clockwise
-  text("CW", width-inchToPix(.4f), inchToPix(.4f));
-  if (mousePressed && dist(width, 0, mouseX, mouseY)<inchToPix(.8f))
-    screenRotation++;
-
-  //lower left corner, decrease Z
-  text("-", inchToPix(.4f), height-inchToPix(.4f));
-  if (mousePressed && dist(0, height, mouseX, mouseY)<inchToPix(.8f))
-    screenZ = constrain(screenZ-inchToPix(.02f), .01, inchToPix(4f)); //leave min and max alone!
-
-  //lower right corner, increase Z
-  text("+", width-inchToPix(.4f), height-inchToPix(.4f));
-  if (mousePressed && dist(width, height, mouseX, mouseY)<inchToPix(.8f))
-    screenZ = constrain(screenZ+inchToPix(.02f), .01, inchToPix(4f)); //leave min and max alone! 
-
-  //left middle, move left
-  text("left", inchToPix(.4f), height/2);
-  if (mousePressed && dist(0, height/2, mouseX, mouseY)<inchToPix(.8f))
-    screenTransX-=inchToPix(.02f);
-
-  text("right", width-inchToPix(.4f), height/2);
-  if (mousePressed && dist(width, height/2, mouseX, mouseY)<inchToPix(.8f))
-    screenTransX+=inchToPix(.02f);
-
-  text("up", width/2, inchToPix(.4f));
-  if (mousePressed && dist(width/2, 0, mouseX, mouseY)<inchToPix(.8f))
-    screenTransY-=inchToPix(.02f);
-
-  text("down", width/2, height-inchToPix(.4f));
-  if (mousePressed && dist(width/2, height, mouseX, mouseY)<inchToPix(.8f))
-    screenTransY+=inchToPix(.02f);
-}
 
 
 void mousePressed()
@@ -204,19 +167,13 @@ void mousePressed()
     
     //start dragging the square to follow the cursor for as long as it is still pressed
     draggingSquare = true;
-  }  
-  if (!rotateResizeSelected && overCircle(rotateCircleXpos+500, rotateCircleYpos+400, 2*widthOfRotateControlCircle))
+  } 
+  
+  if (!rotateResizeSelected && overCircle())
   {
     prevPosX = mouseX;
     prevPosY = mouseY;
     rotateResizeSelected = true;
-  }
-  else if(rotateResizeSelected)
-  {
-    println("false");
-    rotateResizeSelected = false;
-    rotateCircleXpos = mouseX - 500;
-    rotateCircleYpos = mouseY - 400;
   }
 }
 
@@ -228,12 +185,8 @@ void mouseDragged()
     screenTransX = adjustedX;
     screenTransY = adjustedY;
   }
-}
-
-void mouseMoved()
-{
   // rotation logic
-  if(rotateResizeSelected == true)
+  if(rotateResizeSelected)
   {
     println(rotateCircleXpos+500, rotateCircleYpos+400, mouseX, mouseY);
     if(mouseX > prevPosX)
@@ -247,7 +200,7 @@ void mouseMoved()
     prevPosX = mouseX;
     
     // resizing logic
-    if(rotateResizeSelected == true)
+    if(rotateResizeSelected)
     {
       if(mouseY > prevPosY)
       {
@@ -262,35 +215,39 @@ void mouseMoved()
   }
 }
 
+
 void mouseReleased()
 {
-  //check to see if user clicked middle of screen within 3 inches
-  //if (dist(width/2, height/2, mouseX, mouseY)<inchToPix(3f))
-  //{
-  //  if (userDone==false && !checkForSuccess())
-  //    errorCount++;
 
-  //  trialIndex++; //and move on to next trial
-
-  //  if (trialIndex==trialCount && userDone==false)
-  //  {
-  //    userDone = true;
-  //    finishTime = millis();
-  //  }
-  //}
   if (draggingSquare){
     draggingSquare = false;
   }
+  if (rotateResizeSelected){
+    rotateResizeSelected = false;
+  }
 }
 
-boolean overCircle(int x, int y, int diameter) {
-  float disX = x - mouseX;
-  float disY = y - mouseY;
-  if (sqrt(sq(disX) + sq(disY)) < diameter/2 ) {
-    println("true");
+boolean overCircle() {
+  double radians = radians(screenRotation);  
+  double hyp = (screenZ/2) + lenRotateControlHandle + (widthOfRotateControlCircle/2); 
+  double adj = hyp * Math.sin(radians);
+  double opp = hyp * Math.cos(radians);
+  double centerCircleX = screenTransX + adj;
+  double centerCircleY = screenTransY - opp;
+  float adjustedX = mouseX - (width/2);
+  float adjustedY = mouseY - (height/2);
+  
+  System.out.println("mouse coords");
+  System.out.println(adjustedX);
+  System.out.println(adjustedY);
+  System.out.println("circle coords");
+  System.out.println(centerCircleX);
+  System.out.println(centerCircleY);
+    
+  if (dist((float)centerCircleX, (float)centerCircleY, adjustedX, adjustedY) < (widthOfRotateControlCircle/2)){
     return true;
-  } else {
-    println("true");
+  }
+  else {
     return false;
   }
 }
