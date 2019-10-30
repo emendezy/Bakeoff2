@@ -17,6 +17,7 @@ float errorPenalty = 0.5f; //for every error, add this value to mean time
 int startTime = 0; // time starts when the first click is captured
 int finishTime = 0; //records the time of the final click
 boolean userDone = false; //is the user done
+boolean pressedSubmit = false; //is the user done w the current trial
 
 //drag and drop variables
 boolean draggingSquare = false;
@@ -138,6 +139,11 @@ void draw() {
   //===========DRAW EXAMPLE CONTROLS=================
   fill(255);
   text("Trial " + (trialIndex+1) + " of " +trialCount, width/2, inchToPix(.8f));
+  
+  
+  text("submit", width/2, height-inchToPix(.4f));
+  if (mousePressed && dist(width/2, height, mouseX, mouseY)<inchToPix(.8f))
+    pressedSubmit = true;
 }
 
 
@@ -178,7 +184,8 @@ void mousePressed()
 }
 
 void mouseDragged() 
-{
+{  
+  
   if (draggingSquare){
     float adjustedX = mouseX - (width/2);
     float adjustedY = mouseY - (height/2);
@@ -188,7 +195,6 @@ void mouseDragged()
   // rotation logic
   if(rotateResizeSelected)
   {
-    println(rotateCircleXpos+500, rotateCircleYpos+400, mouseX, mouseY);
     if(mouseX > prevPosX)
     {
       screenRotation += 2;
@@ -218,7 +224,20 @@ void mouseDragged()
 
 void mouseReleased()
 {
+  if (pressedSubmit){
+    if (userDone==false && !checkForSuccess())
+      errorCount++;
 
+    trialIndex++; //and move on to next trial
+
+    if (trialIndex==trialCount && userDone==false)
+    {
+      userDone = true;
+      finishTime = millis();
+    }
+    pressedSubmit = false;
+  }
+  
   if (draggingSquare){
     draggingSquare = false;
   }
@@ -236,15 +255,8 @@ boolean overCircle() {
   double centerCircleY = screenTransY - opp;
   float adjustedX = mouseX - (width/2);
   float adjustedY = mouseY - (height/2);
-  
-  System.out.println("mouse coords");
-  System.out.println(adjustedX);
-  System.out.println(adjustedY);
-  System.out.println("circle coords");
-  System.out.println(centerCircleX);
-  System.out.println(centerCircleY);
-    
-  if (dist((float)centerCircleX, (float)centerCircleY, adjustedX, adjustedY) < (widthOfRotateControlCircle/2)){
+      
+  if (dist((float)centerCircleX, (float)centerCircleY, adjustedX, adjustedY) < (widthOfRotateControlCircle)){
     return true;
   }
   else {
