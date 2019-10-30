@@ -1,5 +1,10 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.awt.Robot;
+import java.awt.AWTException;
+import java.awt.PointerInfo;
+import java.awt.MouseInfo;
+import java.awt.Point;
 
 //these are variables you should probably leave alone
 int index = 0; //starts at zero-ith trial
@@ -11,6 +16,8 @@ float errorPenalty = 0.5f; //for every error, add this value to mean time
 int startTime = 0; // time starts when the first click is captured
 int finishTime = 0; //records the time of the final click
 boolean userDone = false; //is the user done
+boolean draggingSquare = false;
+Robot robby;
 
 final int screenPPI = 72; //what is the DPI of the screen you are using
 //you can test this by drawing a 72x72 pixel rectangle in code, and then confirming with a ruler it is 1x1 inch. 
@@ -45,6 +52,17 @@ void setup() {
   textFont(createFont("Arial", inchToPix(.3f))); //sets the font to Arial that is 0.3" tall
   textAlign(CENTER);
 
+  //setting up mouse movement
+  try
+  {
+    robby = new Robot();
+  }
+  catch (AWTException e)
+  {
+    println("Robot class not supported by your system!");
+    exit();
+  }
+  
   //don't change this! 
   border = inchToPix(2f); //padding of 1.0 inches
 
@@ -169,6 +187,24 @@ void mousePressed()
     startTime = millis();
     println("time started!");
   }
+  float adjustedX = mouseX - (width/2);
+  float adjustedY = mouseY - (height/2);
+  float length = (screenZ/2) + 2;
+  //clicked inside of square
+  if (abs(screenTransX - adjustedX) < length && abs(screenTransY - adjustedY) < length)
+  {
+    //jump the cursor to be in the center of the square
+    PointerInfo a = MouseInfo.getPointerInfo();
+    Point b = a.getLocation();
+    int x = (int) b.getX();
+    int y = (int) b.getY();
+    float xdiff =  screenTransX - adjustedX;
+    float ydiff = screenTransY - adjustedY;
+    robby.mouseMove(x+(int)xdiff, y+(int)ydiff);
+    
+    //start dragging the square to follow the cursor for as long as it is still pressed
+    draggingSquare = true;
+  }  
   if (!rotateResizeSelected && overCircle(rotateCircleXpos+500, rotateCircleYpos+400, 2*widthOfRotateControlCircle))
   {
     prevPosX = mouseX;
@@ -181,6 +217,16 @@ void mousePressed()
     rotateResizeSelected = false;
     rotateCircleXpos = mouseX - 500;
     rotateCircleYpos = mouseY - 400;
+  }
+}
+
+void mouseDragged() 
+{
+  if (draggingSquare){
+    float adjustedX = mouseX - (width/2);
+    float adjustedY = mouseY - (height/2);
+    screenTransX = adjustedX;
+    screenTransY = adjustedY;
   }
 }
 
@@ -216,23 +262,26 @@ void mouseMoved()
   }
 }
 
-//void mouseReleased()
-//{
-//  //check to see if user clicked middle of screen within 3 inches
-//  if (dist(width/2, height/2, mouseX, mouseY)<inchToPix(3f))
-//  {
-//    if (userDone==false && !checkForSuccess())
-//      errorCount++;
+void mouseReleased()
+{
+  //check to see if user clicked middle of screen within 3 inches
+  //if (dist(width/2, height/2, mouseX, mouseY)<inchToPix(3f))
+  //{
+  //  if (userDone==false && !checkForSuccess())
+  //    errorCount++;
 
-//    trialIndex++; //and move on to next trial
+  //  trialIndex++; //and move on to next trial
 
-//    if (trialIndex==trialCount && userDone==false)
-//    {
-//      userDone = true;
-//      finishTime = millis();
-//    }
-//  }
-//}
+  //  if (trialIndex==trialCount && userDone==false)
+  //  {
+  //    userDone = true;
+  //    finishTime = millis();
+  //  }
+  //}
+  if (draggingSquare){
+    draggingSquare = false;
+  }
+}
 
 boolean overCircle(int x, int y, int diameter) {
   float disX = x - mouseX;
