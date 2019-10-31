@@ -112,11 +112,17 @@ void draw() {
     Target t = targets.get(i);
     translate(t.x, t.y); //center the drawing coordinates to the center of the screen
     rotate(radians(t.rotation));
-    if (trialIndex==i)
+    if (trialIndex==i){
       fill(255, 0, 0, 192); //set color to semi translucent
-    else
-      fill(128, 60, 60, 128); //set color to semi translucent
-    rect(0, 0, t.z, t.z);
+      rect(0, 0, t.z, t.z);
+      fill(255, 255, 0, 255);
+      ellipse(0,0,10,10);
+    } else {
+      fill(255, 255, 0, 128);
+      ellipse(0,0,10,10);
+      fill(128, 60, 60, 80); //set color to semi translucent
+      rect(0, 0, t.z, t.z);
+    }
     popMatrix();
   }
 
@@ -134,6 +140,9 @@ void draw() {
   fill(0, 225, 0);
   rotateCircleXpos = (int)screenTransX; 
   ellipse(0, -lenRotateControlHandle - (screenZ/2), widthOfRotateControlCircle, widthOfRotateControlCircle);
+  
+  fill(0, 198, 255, 200);
+  ellipse(0, 0, 10, 10);
   popMatrix();
 
   //===========DRAW EXAMPLE CONTROLS=================
