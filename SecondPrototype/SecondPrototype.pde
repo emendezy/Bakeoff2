@@ -141,10 +141,12 @@ void draw() {
   translate(width/2, height/2); //center the drawing coordinates to the center of the screen
   translate(screenTransX, screenTransY);
   rotate(radians(screenRotation));
-  fill(0,190,255, 128);
+  fill(0,0,0,0);
   strokeWeight(3f);
   stroke(160);
   rect(0, 0, screenZ, screenZ);
+  fill(0,190,255, 128);
+  ellipse(0,0,screenZ, screenZ);
   line(0, -screenZ/2, 0, -lenRotateControlHandle - (screenZ/2));
   strokeWeight(0f);
   fill(0, 225, 0);
@@ -159,7 +161,7 @@ void draw() {
   fill(255);
   text("Trial " + (trialIndex+1) + " of " +trialCount, width/2, inchToPix(.8f));
   fill(44, 93, 254);
-  text("Double click to submit", width/2, height-inchToPix(.4f));
+  text("Double click ANYWHERE to submit", width/2, height-inchToPix(.4f));
 }
 
 
