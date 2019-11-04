@@ -123,7 +123,6 @@ void draw() {
       ellipse(0,0,10,10);
     } else {
       fill(255, 255, 0, 128);
-      ellipse(0,0,10,10);
       fill(128, 60, 60, 80); //set color to semi translucent
       rect(0, 0, t.z, t.z);
     }
@@ -251,26 +250,13 @@ public void mouseClicked(MouseEvent evt) {
       userDone = true;
       finishTime = millis();
     }
-    pressedSubmit = false;
+    
   }
 }
 
 void mouseReleased()
 {
-  if (pressedSubmit){
-    if (userDone==false && !checkForSuccess())
-      errorCount++;
 
-    trialIndex++; //and move on to next trial
-
-    if (trialIndex==trialCount && userDone==false)
-    {
-      userDone = true;
-      finishTime = millis();
-    }
-    pressedSubmit = false;
-  }
-  
   if (draggingSquare){
     draggingSquare = false;
   }
@@ -301,17 +287,20 @@ boolean overCircle() {
 //probably shouldn't modify this, but email me if you want to for some good reason.
 public boolean checkForSuccess()
 {
-  Target t = targets.get(trialIndex);	
-  boolean closeDist = dist(t.x, t.y, screenTransX, screenTransY)<inchToPix(.05f); //has to be within +-0.05"
-  boolean closeRotation = calculateDifferenceBetweenAngles(t.rotation, screenRotation)<=5;
-  boolean closeZ = abs(t.z - screenZ)<inchToPix(.05f); //has to be within +-0.05"	
-
-  println("Close Enough Distance: " + closeDist + " (cursor X/Y = " + t.x + "/" + t.y + ", target X/Y = " + screenTransX + "/" + screenTransY +")");
-  println("Close Enough Rotation: " + closeRotation + " (rot dist="+calculateDifferenceBetweenAngles(t.rotation, screenRotation)+")");
-  println("Close Enough Z: " +  closeZ + " (cursor Z = " + t.z + ", target Z = " + screenZ +")");
-  println("Close enough all: " + (closeDist && closeRotation && closeZ));
-
-  return closeDist && closeRotation && closeZ;
+  if (trialIndex < trialCount) { 
+    Target t = targets.get(trialIndex);	
+    boolean closeDist = dist(t.x, t.y, screenTransX, screenTransY)<inchToPix(.05f); //has to be within +-0.05"
+    boolean closeRotation = calculateDifferenceBetweenAngles(t.rotation, screenRotation)<=5;
+    boolean closeZ = abs(t.z - screenZ)<inchToPix(.05f); //has to be within +-0.05"	
+  
+    println("Close Enough Distance: " + closeDist + " (cursor X/Y = " + t.x + "/" + t.y + ", target X/Y = " + screenTransX + "/" + screenTransY +")");
+    println("Close Enough Rotation: " + closeRotation + " (rot dist="+calculateDifferenceBetweenAngles(t.rotation, screenRotation)+")");
+    println("Close Enough Z: " +  closeZ + " (cursor Z = " + t.z + ", target Z = " + screenZ +")");
+    println("Close enough all: " + (closeDist && closeRotation && closeZ));
+  
+    return closeDist && closeRotation && closeZ;
+  }
+  else {return false;}
 }
 
 //utility function I include to calc diference between two angles
