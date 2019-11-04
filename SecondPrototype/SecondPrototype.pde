@@ -101,6 +101,7 @@ void draw() {
   //shouldn't really modify this printout code unless there is a really good reason to
   if (userDone)
   {
+    textSize(30);
     text("User completed " + trialCount + " trials", width/2, inchToPix(.4f));
     text("User had " + errorCount + " error(s)", width/2, inchToPix(.4f)*2);
     text("User took " + (finishTime-startTime)/1000f/trialCount + " sec per target", width/2, inchToPix(.4f)*3);
@@ -144,8 +145,10 @@ void draw() {
   strokeWeight(3f);
   stroke(160);
   rect(0, 0, screenZ, screenZ);
-  fill(0,190,255, 128);
+  strokeWeight(0f);
+  fill(0,190,255, 60);
   ellipse(0,0,screenZ, screenZ);
+  strokeWeight(3f);
   line(0, -screenZ/2, 0, -lenRotateControlHandle - (screenZ/2));
   strokeWeight(0f);
   fill(0, 225, 0);
@@ -158,9 +161,11 @@ void draw() {
 
   //===========DRAW EXAMPLE CONTROLS=================
   fill(255);
+  textSize(30);
   text("Trial " + (trialIndex+1) + " of " +trialCount, width/2, inchToPix(.8f));
-  fill(44, 93, 254);
-  text("Double click ANYWHERE to submit", width/2, height-inchToPix(.4f));
+  textSize(50);
+  fill(186, 0, 255);
+  text("Double click ANYWHERE to submit", width/2, height-inchToPix(.5f));
 }
 
 
